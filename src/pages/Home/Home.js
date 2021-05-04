@@ -1,34 +1,44 @@
-import Note from '../../common/Note';
 import './home.css'
-import addButton from '../../assets/add.svg'
-import React,{useState} from 'react'
+import React,{useState, useCallback} from 'react'
+import { FaPlus } from 'react-icons/fa';
+import {useDropzone} from 'react-dropzone'
+
 
 function Home(){
-    const [notes, setNotes] = useState([])
-    
-    const addNewNote=()=>{
-        let latestNote = null;
-        
-        if(notes.length>0){
-            latestNote = {id:notes[notes.length-1].id+1}
-        }else{
-            latestNote = {id:1}
-        }
-        console.log([...notes,latestNote])
-        setNotes([...notes,latestNote])
+    const [headers, setHeaders] = useState([''])
+    const onDrop = useCallback(acceptedFiles => {
+        // Do something with the files
+      }, [])
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
+        const addNewHeader=()=>{
+        let latestHeader = null;
+        setHeaders([...headers,''])
     }
 
     return (
         <div className="main-container">
-            <div className="note-container">
-                {notes.map((i)=>{
+            <form className="note-container">
+                {headers.map((h, index)=>{
                     return (
-                        <Note id={i.id} key={i.id}/>
+                      <div className="row form-group" key={index}>
+                          <label className="col-3 label form-control"> Header {index+1} </label>
+                          <input className="col-9 input form-control" type='text'/>
+                      </div>
                     )
                 })}
+            </form>
+            <div className="form-control">
+                <span className='btn btn-primary btn-sm' onClick={addNewHeader}><FaPlus/></span>
             </div>
-            <div className="add-button" onClick={addNewNote}>
-                <img src={addButton} alt="add" className="add-image"/>
+            <div className="file-container">
+                <div {...getRootProps()}>
+                  <input {...getInputProps()} />
+                  {
+                    isDragActive ?
+                      <p>Drop the files here ...</p> :
+                      <p>Drag 'n' drop some files here, or click to select files</p>
+                  }
+                </div>
             </div>
         </div>
     )
