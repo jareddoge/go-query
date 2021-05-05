@@ -1,18 +1,40 @@
 import './home.css'
 import React,{useState, useCallback} from 'react'
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa'
 import {useDropzone} from 'react-dropzone'
+import Dropzone from '../../common/Dropzone'
+import * as XLSX from 'xlsx'
 
 
 function Home(){
     const [headers, setHeaders] = useState([''])
+    const [file, setFile] = useState({})
+
     const onDrop = useCallback(acceptedFiles => {
-        // Do something with the files
+        
       }, [])
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
         const addNewHeader=()=>{
         let latestHeader = null;
         setHeaders([...headers,''])
+    }
+    const onFileDrop = (file) =>{
+        console.log(file)
+        const promise = new Promise((resolve,reject)=>{
+					const fileReader = new FileReader();
+					fileReader.readAsArrayBuffer(file);
+					fileReader.onload = (e) =>{
+						const bufferArray = e.target.result;
+						const wb = XLSX.read(bufferArray,{type:'buffer'});
+						const wsname= wb.SheetNames[0];
+						const ws = wb.Sheets[wsname];
+						const data = XLSX.utils.sheet_add_json(ws);
+						resolve(data);
+					}
+        })
+				promise.then((d)=>{
+					console.log(d);
+				})
     }
 
     return (
@@ -31,14 +53,7 @@ function Home(){
                 <span className='btn btn-primary btn-sm' onClick={addNewHeader}><FaPlus/></span>
             </div>
             <div className="file-container">
-                <div {...getRootProps()}>
-                  <input {...getInputProps()} />
-                  {
-                    isDragActive ?
-                      <p>Drop the files here ...</p> :
-                      <p>Drag 'n' drop some files here, or click to select files</p>
-                  }
-                </div>
+                <Dropzone onDrop={(file)=>onFileDrop(file)}/>
             </div>
         </div>
     )
