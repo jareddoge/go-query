@@ -13,6 +13,10 @@
   border: solid 1px black;
   flex: 1;
 }
+.file-container{
+  border: solid 1px black;
+  flex: 2;
+}
 
 .lower-container{
   border:solid 1px black;
