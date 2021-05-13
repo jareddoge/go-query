@@ -4,23 +4,28 @@ import { FaPlus } from "react-icons/fa";
 import { useDropzone } from "react-dropzone";
 import Dropzone from "../../common/Dropzone";
 import * as XLSX from "xlsx";
+import * as _ from "lodash";
 
 function Home() {
-  const [headers, setHeaders] = useState([""]);
+  const [table, setTable] = useState('');
+  const [headers, setHeaders] = useState([{ header: '', dataType: '', isPK: true }]);
   const [hasHeader, setHeaderBoolean] = useState(true);
   const [file, setFile] = useState({});
   const [action, setAction] = useState("insert");
+  const dataTypes = ['string', 'number', 'date', 'boolean']
 
-  const onDrop = useCallback((acceptedFiles) => {}, []);
+
+  const onDrop = useCallback((acceptedFiles) => { }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-  const addNewHeader = () => {
-    let latestHeader = null;
-    setHeaders([...headers, ""]);
-  };
 
-  function onActionClick(v) {
-    console.log(v);
-  }
+  const addHeader = () => {
+    //push new empty object into array
+    setHeaders([...headers, {
+      header: '',
+      dataType: '',
+      isPK: false
+    }])
+  };
 
   function extractHeader(ws) {
     const header = [];
@@ -30,12 +35,92 @@ function Home() {
     }
     return header;
   }
-  const onHasHeaderClick = () => {
-    setHeaderBoolean(!hasHeader);
+
+  const onHeaderChange = (string, index) => {
+    let heads = [...headers]
+    let head = { ...heads[index] }
+    head.header = string
+    heads[index] = head
+    setHeaders(heads);
   };
 
-	function onHeaderChange(){
-	};
+  function onDataTypeChange(string, index) {
+    let datas = [...headers]
+    let data = { ...datas[index] }
+    data.dataType = string
+    datas[index] = data
+    setHeaders(datas);
+  };
+
+  function setPKBoolean(boo, index) {
+    let datas = [...headers]
+    let data = { ...datas[index] }
+    data.isPK = boo
+    datas[index] = data
+    setHeaders(datas);
+  };
+
+  const writeQuery = (header, data) => {
+    let s = '';
+    switch (action) {
+      case 'insert': {
+        let headerString = header.toString()
+        //query
+        s += `INSERT INTO ${table} ( ${headerString} ) VALUES `
+        Object.entries(data).map((i,j)=>{
+            console.log(headers, 'header')
+        })
+
+        
+      }
+        break;
+      case 'update': {
+
+      }
+        break;
+    }
+    // s += `INSERT INTO ${file}​​​​​​​​\n`;
+    // fs.createReadStream(getDir(TARGET_FOLDER, tableFolder, file)).pipe(csv())
+    //   .on('data', (row) => {
+    //     const primaryKey = getPrimaryKey(tableFolder);
+    //     s += updateSQL(tableFolder, row, primaryKey) + "\n";
+    //   })
+    //   .on('end', () => {
+    //     if (!fs.existsSync(RESULT_FOLDER)) {
+    //       fs.mkdirSync(RESULT_FOLDER)
+    //     }
+    //     fs.writeFile(getDir(RESULT_FOLDER, `${file}​​​​​​​​.sql`), s, { flag: "w" }, (err) => {
+    //       if (err) throw err;
+    //     });
+    //   });
+  }
+
+  const predictDataType = (header, data) => {
+    let dt_arr = [headers]
+    console.log(dt_arr,'test')
+
+    Object.entries(data[0]).map((obj, index) => {
+      let dt_v = { ...dt_arr[index] }
+
+      delete dt_arr[0][0]
+      dt_v.header = obj[0]
+      if (/^\d+$/.test(obj[1])) {
+        dt_v.dataType = 'number'
+        dt_arr[index] = dt_v
+      } else if (Date.parse(obj[1])) {
+        dt_v.dataType = 'date'
+        dt_arr[index] = dt_v
+      } else if (obj[1] === "True" || obj[1] === "False") {
+        dt_v.dataType = 'boolean'
+        dt_arr[index] = dt_v
+      } else {
+        dt_v.dataType = 'string'
+        dt_arr[index] = dt_v
+      }
+      dt_arr[index] = dt_v
+    })
+    setHeaders(dt_arr, writeQuery(header,data));
+  }
 
   const onFileDrop = (file) => {
     console.log(file);
@@ -52,12 +137,9 @@ function Home() {
       const ws = wb.Sheets[wsname];
       const data = XLSX.utils.sheet_to_json(ws);
       let header = [];
-      console.log(typeof data);
-
-      if (hasHeader) {
-        header = extractHeader(ws);
-				setHeaders(header);
-      }
+      header = extractHeader(ws);
+      predictDataType(header, data) // --> setHeader
+       //-- getHea
     };
   };
 
@@ -74,7 +156,6 @@ function Home() {
               onChange={() => setHeaderBoolean(!hasHeader)}
             />
           </div>
-          {console.log(hasHeader)}
           <div>
             <input
               type="radio"
@@ -98,6 +179,7 @@ function Home() {
                 <th></th>
                 <th>Header</th>
                 <th>Data Type</th>
+                <th>PK</th>
               </tr>
               {headers.map((h, index) => {
                 return (
@@ -112,25 +194,29 @@ function Home() {
                         <input
                           className="col-9 input form-control"
                           type="text"
-                          value={h}
-													onChange={onHeaderChange()}
+                          value={h.header}
+                          onChange={(e) => onHeaderChange(e.target.value, index)}
                         />
                       </div>
                     </td>
                     <td>
+                      <select className="col-9 input form-control" value={h.dataType} onChange={(e) => onDataTypeChange(e.target.value, index)} >
+                        {dataTypes.map((x, y) => <option key={y}>{x}</option>)}
+                      </select>
+                    </td>
+                    <td>
                       <input
                         className="col-9 input form-control"
-                        type="text"
-                        value={h}
-												onChange={onHeaderChange()}
+                        type="checkbox"
+                        defaultChecked={h.isPK}
+                        onChange={(e) => setPKBoolean(e.target.checked, index)}
                       />
                     </td>
                   </tr>
                 );
               })}
             </table>
-
-            <span className="btn btn-primary btn-sm" onClick={addNewHeader}>
+            <span className="btn btn-primary btn-sm" onClick={addHeader}>
               <FaPlus />
             </span>
           </div>
@@ -138,10 +224,7 @@ function Home() {
         <div className="file-container">
           <Dropzone onDrop={(file) => onFileDrop(file)} />
           {/* { (headers.length>1)?  : <div>bye</div>} */}
-        </div>{" "}
-        {/* {
-       				(headers.length>1)? <div> hi</div> : <div>bye</div>
-        		} */}
+        </div>
       </div>
     </div>
   );
