@@ -7,24 +7,28 @@ import * as XLSX from "xlsx";
 import * as _ from "lodash";
 
 function Home() {
-  const [table, setTable] = useState('');
-  const [headers, setHeaders] = useState([{ header: '', dataType: '', isPK: true }]);
+  const [table, setTable] = useState("");
+  const [column, setColumn] = useState([
+    { header: "", dataType: "", isPK: true },
+  ]);
   const [hasHeader, setHeaderBoolean] = useState(true);
   const [file, setFile] = useState({});
   const [action, setAction] = useState("insert");
-  const dataTypes = ['string', 'number', 'date', 'boolean']
+  const dataTypes = ["string", "number", "date", "boolean"];
 
-
-  const onDrop = useCallback((acceptedFiles) => { }, []);
+  const onDrop = useCallback((acceptedFiles) => {}, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  const addHeader = () => {
+  const addColumn = () => {
     //push new empty object into array
-    setHeaders([...headers, {
-      header: '',
-      dataType: '',
-      isPK: false
-    }])
+    setColumn([
+      ...column,
+      {
+        header: "",
+        dataType: "",
+        isPK: false,
+      },
+    ]);
   };
 
   function extractHeader(ws) {
@@ -37,46 +41,49 @@ function Home() {
   }
 
   const onHeaderChange = (string, index) => {
-    let heads = [...headers]
-    let head = { ...heads[index] }
-    head.header = string
-    heads[index] = head
-    setHeaders(heads);
+    let heads = [...column];
+    let head = { ...heads[index] };
+    head.header = string;
+    heads[index] = head;
+    setColumn(heads);
   };
 
   function onDataTypeChange(string, index) {
-    let datas = [...headers]
-    let data = { ...datas[index] }
-    data.dataType = string
-    datas[index] = data
-    setHeaders(datas);
-  };
+    let datas = [...column];
+    let data = { ...datas[index] };
+    data.dataType = string;
+    datas[index] = data;
+    setColumn(datas);
+  }
 
   function setPKBoolean(boo, index) {
-    let datas = [...headers]
-    let data = { ...datas[index] }
-    data.isPK = boo
-    datas[index] = data
-    setHeaders(datas);
-  };
+    let datas = [...column];
+    let data = { ...datas[index] };
+    data.isPK = boo;
+    datas[index] = data;
+    setColumn(datas);
+  }
 
   const writeQuery = (header, data) => {
-    let s = '';
+
+    let s = "";
     switch (action) {
-      case 'insert': {
-        let headerString = header.toString()
-        //query
-        s += `INSERT INTO ${table} ( ${headerString} ) VALUES `
-        Object.entries(data).map((i,j)=>{
-            console.log(headers, 'header')
-        })
-
-        
-      }
+      case "insert":
+        {
+          let headerString = header.toString();
+          //query
+          s += `INSERT INTO ${table} ( ${headerString} ) VALUES `;
+          Object.entries(data).map((i, j) => {
+            Object.entries(i)
+            console.log(i)
+            s +=  j
+          });
+          console.log(s)
+        }
         break;
-      case 'update': {
-
-      }
+      case "update":
+        {
+        }
         break;
     }
     // s += `INSERT INTO ${file}​​​​​​​​\n`;
@@ -93,38 +100,39 @@ function Home() {
     //       if (err) throw err;
     //     });
     //   });
-  }
+  };
 
   const predictDataType = (header, data) => {
-    let dt_arr = [headers]
-    console.log(dt_arr,'test')
+    let dt_arr = column;
+    console.log(column, "init header here");
+    console.log(dt_arr, "test");
 
     Object.entries(data[0]).map((obj, index) => {
-      let dt_v = { ...dt_arr[index] }
+      let dt_v = { ...dt_arr[index] };
+      console.log(dt_v, "entry here");
 
-      delete dt_arr[0][0]
-      dt_v.header = obj[0]
       if (/^\d+$/.test(obj[1])) {
-        dt_v.dataType = 'number'
-        dt_arr[index] = dt_v
+        dt_v.dataType = "number";
       } else if (Date.parse(obj[1])) {
-        dt_v.dataType = 'date'
-        dt_arr[index] = dt_v
+        dt_v.dataType = "date";
       } else if (obj[1] === "True" || obj[1] === "False") {
-        dt_v.dataType = 'boolean'
-        dt_arr[index] = dt_v
+        dt_v.dataType = "boolean";
       } else {
-        dt_v.dataType = 'string'
-        dt_arr[index] = dt_v
+        dt_v.dataType = "string";
       }
-      dt_arr[index] = dt_v
-    })
-    setHeaders(dt_arr, writeQuery(header,data));
-  }
+      dt_arr[index] = dt_v;
+    });
+
+    console.log(dt_arr, "dt_arr");
+    new Promise((resolve, reject) => {
+      resolve(setColumn(dt_arr));
+    }).then(() => {
+      writeQuery(header, data);
+    });
+  };
 
   const onFileDrop = (file) => {
     console.log(file);
-    let newHeader = [];
     const reader = new FileReader();
     console.log(typeof file);
     reader.readAsBinaryString(file[0]);
@@ -138,8 +146,12 @@ function Home() {
       const data = XLSX.utils.sheet_to_json(ws);
       let header = [];
       header = extractHeader(ws);
-      predictDataType(header, data) // --> setHeader
-       //-- getHea
+
+      setColumn([])
+      console.log(column, "init header here");
+      predictDataType(header, data)
+      // --> setHeader
+      //-- getHea
     };
   };
 
@@ -181,7 +193,7 @@ function Home() {
                 <th>Data Type</th>
                 <th>PK</th>
               </tr>
-              {headers.map((h, index) => {
+              {column.map((h, index) => {
                 return (
                   <tr>
                     <td>
@@ -195,13 +207,23 @@ function Home() {
                           className="col-9 input form-control"
                           type="text"
                           value={h.header}
-                          onChange={(e) => onHeaderChange(e.target.value, index)}
+                          onChange={(e) =>
+                            onHeaderChange(e.target.value, index)
+                          }
                         />
                       </div>
                     </td>
                     <td>
-                      <select className="col-9 input form-control" value={h.dataType} onChange={(e) => onDataTypeChange(e.target.value, index)} >
-                        {dataTypes.map((x, y) => <option key={y}>{x}</option>)}
+                      <select
+                        className="col-9 input form-control"
+                        value={h.dataType}
+                        onChange={(e) =>
+                          onDataTypeChange(e.target.value, index)
+                        }
+                      >
+                        {dataTypes.map((x, y) => (
+                          <option key={y}>{x}</option>
+                        ))}
                       </select>
                     </td>
                     <td>
@@ -216,7 +238,7 @@ function Home() {
                 );
               })}
             </table>
-            <span className="btn btn-primary btn-sm" onClick={addHeader}>
+            <span className="btn btn-primary btn-sm" onClick={addColumn}>
               <FaPlus />
             </span>
           </div>
