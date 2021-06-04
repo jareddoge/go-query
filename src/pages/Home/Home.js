@@ -4,7 +4,6 @@ import { FaPlus } from "react-icons/fa";
 import { useDropzone } from "react-dropzone";
 import Dropzone from "../../common/Dropzone";
 import * as XLSX from "xlsx";
-import * as _ from "lodash";
 
 function Home() {
   const [table, setTable] = useState("");
@@ -12,12 +11,10 @@ function Home() {
     { header: "", dataType: "", isPK: true },
   ]);
   const [hasHeader, setHeaderBoolean] = useState(true);
-  const [file, setFile] = useState({});
   const [action, setAction] = useState("insert");
   const dataTypes = ["string", "number", "date", "boolean"];
 
   const onDrop = useCallback((acceptedFiles) => {}, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const addColumn = () => {
     //push new empty object into array
@@ -67,22 +64,35 @@ function Home() {
   const writeQuery = (header, data) => {
 
     let s = "";
+    let arr = [];
     switch (action) {
       case "insert":
         {
           let headerString = header.toString();
           //query
-          s += `INSERT INTO ${table} ( ${headerString} ) VALUES `;
-          Object.entries(data).map((i, j) => {
-            Object.entries(i)
-            console.log(i)
-            s +=  j
+          let row_query = []
+          let query = []
+          s += `INSERT INTO ${table} ( ${headerString} ) VALUES \n`;
+          Object.entries(data).map((i) => {
+            let temp_str = ''
+            Object.values(i[1]).map((v,index)=>{
+              if(column[index].dataType == 'string' || column[index].data == 'date'){
+                //enclose with single quote
+                if(v) v = `'${v}'`
+              }
+              row_query.push(v)
+              temp_str = `(${row_query.toString()})`
+            })
+            query.push(temp_str)
+            // console.log(i[1])
+            // s +=  j
           });
-          console.log(s)
+          console.log(`${s} \n ${query.toString()};`)
         }
         break;
       case "update":
         {
+
         }
         break;
     }
@@ -104,13 +114,11 @@ function Home() {
 
   const predictDataType = (header, data) => {
     let dt_arr = column;
-    console.log(column, "init header here");
-    console.log(dt_arr, "test");
 
     Object.entries(data[0]).map((obj, index) => {
       let dt_v = { ...dt_arr[index] };
-      console.log(dt_v, "entry here");
-
+      dt_v.header = obj[0]
+      dt_v.isPK = false
       if (/^\d+$/.test(obj[1])) {
         dt_v.dataType = "number";
       } else if (Date.parse(obj[1])) {
@@ -123,18 +131,20 @@ function Home() {
       dt_arr[index] = dt_v;
     });
 
-    console.log(dt_arr, "dt_arr");
-    new Promise((resolve, reject) => {
-      resolve(setColumn(dt_arr));
-    }).then(() => {
-      writeQuery(header, data);
-    });
+    setColumn([...dt_arr])
+    writeQuery(header, data);
+
+    // new Promise((resolve, reject) => {
+    //   resolve();
+    // }).then(() => {
+    //   writeQuery(header, data);
+    // });
   };
 
   const onFileDrop = (file) => {
     console.log(file);
     const reader = new FileReader();
-    console.log(typeof file);
+    // console.log(typeof file);
     reader.readAsBinaryString(file[0]);
     const rABS = !!reader.readAsBinaryString;
     reader.onload = (e) => {
@@ -147,8 +157,6 @@ function Home() {
       let header = [];
       header = extractHeader(ws);
 
-      setColumn([])
-      console.log(column, "init header here");
       predictDataType(header, data)
       // --> setHeader
       //-- getHea
@@ -197,7 +205,7 @@ function Home() {
                 return (
                   <tr>
                     <td>
-                      <label className="col-3 label form-control">
+                      <label className="col-3 label form-control" >
                         {index + 1}
                       </label>
                     </td>
