@@ -3,6 +3,7 @@ import React, { useState, useCallback } from "react";
 import { FaPlus } from "react-icons/fa";
 import { useDropzone } from "react-dropzone";
 import Dropzone from "../../common/Dropzone";
+import moment from "moment";
 import * as XLSX from "xlsx";
 
 function Home() {
@@ -75,7 +76,11 @@ function Home() {
           s += `INSERT INTO ${table} ( ${headerString} ) VALUES \n`;
           Object.entries(data).map((i) => {
             let temp_str = ''
+            console.log(i)
             Object.values(i[1]).map((v,index)=>{
+              if(column[index].dataType == 'date'){
+                v = moment(v).format("YYYY-MM-DD")
+              }
               if(column[index].dataType == 'string' || column[index].data == 'date'){
                 //enclose with single quote
                 if(v) v = `'${v}'`
@@ -84,15 +89,17 @@ function Home() {
               temp_str = `(${row_query.toString()})`
             })
             query.push(temp_str)
-            // console.log(i[1])
-            // s +=  j
           });
           console.log(`${s} \n ${query.toString()};`)
         }
         break;
       case "update":
         {
-
+          let row_query = []
+          let query = []
+          Object.entries(data).map((i) => {
+            
+          });
         }
         break;
     }
