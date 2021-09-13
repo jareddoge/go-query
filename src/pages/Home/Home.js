@@ -61,8 +61,7 @@ function Home() {
     setColumn(datas);
   }
 
-  const writeQuery = (header, data) => {
-
+  const constructQuery = (header, data) => {
     let s = "";
     let arr = [];
     switch (action) {
@@ -70,11 +69,11 @@ function Home() {
         {
           let headerString = header.toString();
           //query
-          let row_query = []
           let query = []
-          s += `INSERT INTO ${table} ( ${headerString} ) VALUES \n`;
+          s += `INSERT INTO ${table} ( ${headerString} ) VALUES `;
           Object.entries(data).map((i) => {
             let temp_str = ''
+            let row_query = []
             Object.values(i[1]).map((v,index)=>{
               if(column[index].dataType == 'string' || column[index].data == 'date'){
                 //enclose with single quote
@@ -84,10 +83,8 @@ function Home() {
               temp_str = `(${row_query.toString()})`
             })
             query.push(temp_str)
-            // console.log(i[1])
-            // s +=  j
           });
-          console.log(`${s} \n ${query.toString()};`)
+          console.log(`${s}\n${query.join(',\n')};`)
         }
         break;
       case "update":
@@ -132,19 +129,17 @@ function Home() {
     });
 
     setColumn([...dt_arr])
-    writeQuery(header, data);
+    constructQuery(header, data);
 
     // new Promise((resolve, reject) => {
     //   resolve();
     // }).then(() => {
-    //   writeQuery(header, data);
+    //   constructQuery(header, data);
     // });
   };
 
   const onFileDrop = (file) => {
-    console.log(file);
     const reader = new FileReader();
-    // console.log(typeof file);
     reader.readAsBinaryString(file[0]);
     const rABS = !!reader.readAsBinaryString;
     reader.onload = (e) => {
@@ -156,7 +151,7 @@ function Home() {
       const data = XLSX.utils.sheet_to_json(ws);
       let header = [];
       header = extractHeader(ws);
-
+      setTable(file[0].name)
       predictDataType(header, data)
       // --> setHeader
       //-- getHea
