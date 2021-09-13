@@ -1,0 +1,152 @@
+.note {
+  margin: 15px 5px;
+  padding: 15px;
+  box-shadow: 0px 0px 1px grey;
+  min-width: 250px;
+  max-width: 250px;
+  min-height: 150px;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 0;
+  border-radius: 0px;
+}
+
+.note-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.note-input-area {
+  flex: 15;
+  /* overflow: scroll; */
+}
+
+.new-task-button {
+  flex: 1;
+  text-align: center;
+  background-color: #725bff;
+  width: 50%;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-radius: 35px;
+  color: white;
+  font-size: 0.8rem;
+  padding: 5px 15px;
+  transform: translate(0, 30%);
+  font-weight: bold;
+  min-height: 1rem;
+}
+
+.note-add-button {
+  width: 15px;
+  height: auto;
+  margin-left: 5px;
+}
+
+.setting-button {
+  width: 15px;
+  height: auto;
+}
+
+.close-button {
+  width: 10px;
+  height: auto;
+}
+
+.settings_pop_up {
+  background-color: white;
+  box-shadow: 0px 0px 1px grey;
+  position: absolute;
+  right: -12%;
+  top: 20%;
+  z-index: 2;
+  padding: 5px;
+  border-radius: 3px;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+}
+
+.checked-checkbox {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  border: solid 1px #0066b8;
+  background-color: #0066b8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: border 0.2s linear;
+  position: relative;
+}
+
+.checkbox-inner {
+  transition: all 0.5s linear;
+}
+
+.checked-checkbox-inner {
+  background-color: white;
+  width: 20%;
+  height: 100%;
+  border-radius: 5%;
+  position: absolute;
+  transition: all 0.5s linear;
+}
+
+.checked-checkbox-inner-2 {
+  background-color: white;
+  width: 100%;
+  height: 20%;
+  border-radius: 5%;
+  position: absolute;
+  transition: all 0.5s linear;
+}
+
+.checkbox {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  border: solid 1px #0066b8;
+  transition: border 0.2s linear;
+}
+
+.checkbox-disabled {
+  border-radius: 0;
+  border: solid 1px rgb(255, 228, 228);
+  background-color: rgb(64, 77, 255);
+  box-shadow: 0px 0px 1px rgb(72, 182, 255);
+  transition: all 0.5s linear;
+}
+
+input {
+  border: none;
+  background-color: transparent;
+}
+
+.font-size-8 {
+  font-size: 0.8rem;
+}
+
+.pinImage {
+  width: 15px;
+  height: auto;
+}
+
+.setting-item {
+  padding-top: 1px;
+  padding-bottom: 2px;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
