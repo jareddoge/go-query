@@ -3,6 +3,7 @@ import React, { useState, useCallback } from "react";
 import { FaPlus } from "react-icons/fa";
 import { useDropzone } from "react-dropzone";
 import Dropzone from "../../common/Dropzone";
+import moment from "moment";
 import * as XLSX from "xlsx";
 
 function Home() {
@@ -64,7 +65,9 @@ function Home() {
   const constructQuery = (header, data) => {
     let s = "";
     let arr = [];
-    switch (action) {
+    let row_query = []
+
+    switch(action) {
       case "insert":
         {
           let headerString = header.toString();
@@ -72,9 +75,11 @@ function Home() {
           let query = []
           s += `INSERT INTO ${table} ( ${headerString} ) VALUES `;
           Object.entries(data).map((i) => {
-            let temp_str = ''
-            let row_query = []
+            let temp_str = '';
             Object.values(i[1]).map((v,index)=>{
+              if(column[index].dataType == 'date'){
+                v = moment(v).format("YYYY-MM-DD")
+              }
               if(column[index].dataType == 'string' || column[index].data == 'date'){
                 //enclose with single quote
                 if(v) v = `'${v}'`
@@ -89,9 +94,13 @@ function Home() {
         break;
       case "update":
         {
-
+          let query = []
+          Object.entries(data).map((i) => {
+            
+          });
         }
         break;
+        default:
     }
     // s += `INSERT INTO ${file}​​​​​​​​\n`;
     // fs.createReadStream(getDir(TARGET_FOLDER, tableFolder, file)).pipe(csv())
